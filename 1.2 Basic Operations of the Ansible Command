@@ -1,0 +1,58 @@
+Step 1 Ansible uses the ping module to check whether the communication with the
+controlled hosts is normal.
+Run the following command to invoke the ping module and check whether the controller
+can communicate with the controlled hosts:
+ansible all -m ping
+
+The command output contains warning information. You can add interpreter_python =
+auto_legacy_silent to [default] in the configuration file to clear the warning.
+
+
+Step 2 Practice the Ansible -k option.
+Use the -k option to enter the SSH password in interactive mode. The method is as
+follows:
+ansible all -k -m ping
+
+Step 3 Use the host tag to execute tasks.
+all indicates all hosts in the host list. Use the host tag to specify the host that runs the
+command. The command is as follows:
+ansible Nginx -m ping
+
+
+⚫ Task: Check the communication status between the host in the Zabbix group and the
+controller.
+
+
+
+Step 4 Use --list-host to list the corresponding hosts.
+--list-host can be abbreviated as --list, as shown in the following figure:
+
+ansible Nginx --list
+
+Step 5 Logical relationship of Ansible.
+Run the following command to check the communication between the Zabbix or Nginx
+host group and the controller.
+ansible "Zabbix:Nginx" -m ping
+
+Run the following command to check the communication between the shared hosts in
+the Zabbix and Nginx host groups and the controller:
+ansible "Zabbix:&Nginx" -m ping
+
+
+⚫ Question: Why are there no matched hosts?
+Answer: The preceding information is displayed because the two host groups do not have
+shared hosts.
+Run the following command to check the communication between the controller and the
+hosts that do not belong to the Nginx host group:
+ansible ': !Nginx' -m ping
+
+
+
+Step 6 Check the Ansible execution process.
+Use the -v parameter to check the Ansible command execution process, as shown in the
+following figure:
+ansible ':!Nginx' -v -m ping
+
+⚫ Task: Run -vv and -vvv to check more detailed execution process.
+
+
