@@ -1,0 +1,110 @@
+1.3.1 Practice of the command Module
+Requirement: Copy /etc/passwd from the Nginx host group to /data and check the
+content in the file.
+The commands are as follows:
+ansible Nginx -m command -a "mkdir /data"
+ansible Nginx -m command -a "cp /etc/passwd /data"
+ansible Nginx -m command -a "removes=/data/passwd cat /data/passwd"
+
+
+⚫ command is the default module of Ansible. Can you prove it?
+Answer: If the -m option is not used when running the Ansible command, the command
+module is invoked.
+
+
+
+1.3.2 Practice of the shell Module
+Requirement: Check whether the / directory in the Nginx host group contains directories
+related to data. If yes, use "this is a test" to overwrite the file content in the data
+directory.
+The commands are as follows:
+ansible Nginx -m shell -a "ls / | grep data"
+ansible Nginx -m shell -a "ls /data"
+ansible Nginx -m shell -a "echo 'this is a test' > /data/passwd"
+
+
+1.3.3 Practice of the script Module
+Requirement: Print the MAC addresses of all the hosts.
+Create the following script on the Ansible controller:
+#!/bin/bash
+ip addr | grep link/ether | awk '{print $2}'
+Run the following command on the controller to execute the script on all the controlled
+hosts:
+ansible all -m script -a "~/mac.sh" | grep stdout | awk '{print $2}' | grep \n
+
+
+
+1.3.4 Practice of the copy Module
+Requirement: Create the /root/data/copy file on the controller, copy the file to the /tmp
+directory on the controlled node in the Nginx host group, and enter "hello, openEuler".
+Enter "hello, world" in /root/data/copy, copy the file to the same file in the Nginx group
+again, and keep the destination file unchanged when the file content differs.
+The commands are as follows:
+mkdir /root/data
+touch /root/data/copy
+
+ansible Nginx -m copy -a "src=/root/data/copy dest=tmp"
+
+ansible Nginx -m copy -a "content='hello,openEuler' dest=/tmp/copy"
+
+
+[root@Ansible ~]# echo "hello,world" > /root/data/test
+ansible Nginx -m copy -a "force=no src=/root/data/copy dest=/tmp"
+
+
+1.3.5 Practice of the fetch Module
+Requirement: Save the /tmp/copy file on the Nginx host to the /tmp directory on the
+controller.
+The commands are as follows:
+ansible Nginx -m fetch -a "src=/tmp/copy dest=/tmp/"
+
+
+After the file is fetched, the structure of the /tmp directory is as follows:
+
+tree /tmp
+
+
+1.3.6 Practice of the file Module
+Requirement: Create the /tmp/file/data directory in the Nginx host group, set owner
+and group to test:test, and set the permission to 755. Create the test file in the
+directory, create a soft link pointing to /tmp/link for the test file, and delete the
+/tmp/file directory.
+The commands are as follows:
+ansible Nginx -m file -a "path=/tmp/file/data owner=test group=test mode=755 state=directory"
+
+
+
+
+ansible Nginx -m file -a "path=/tmp/file/data/test state=touch"
+
+
+ansible Nginx -m file -a "src=/tmp/file/data/test dest=/tmp/link state=link"
+
+ansible Nginx -m file -a "path=/tmp/file state=absent"
+
+⚫ Question: What are the owner and group to which the test file belongs? Why?
+Answer: In this lab, the owner and group to which the test file belongs are root:root.
+This is because the owner and group are not specified when the file is created. By default,
+the owner and group that are running the Ansible commands are used.
+
+1.3.7 Practice of the archive and unarchive Modules
+Requirement: Create files test1 and test2 in the /tmp directory of the Nginx host group,
+compress them into test.bz2, and delete test1 and test2. Copy the compressed file to the
+/tmp directory of the controller, and decompress the compressed file on 192.168.1.14 to
+the /tmp directory on 192.168.1.15.
+The commands are as follows:
+ansible Nginx -m file -a "path=/tmp/test1 state=touch"
+ansible Nginx -m file -a "path=/tmp/test1 state=touch"
+ansible Nginx -m archive -a "path=/tmp/test,/tmp/test1 format=zip remove=yes dest=/tmp/test.zip"
+
+ansible Nginx -m fetch -a "src=/tmp/test.bz2 dest=/tmp/"
+
+
+ansible 192.168.1.15 -m unarchive -a "src=/tmp/192.168.1.14/tmp/test.bz2 dest=/tmp/"
+
+
+Check whether the execution is complete. The details are as follows:
+ansible 192.168.1.15 -a "ls /tmp" | grep test
+
+
+
