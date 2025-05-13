@@ -1,0 +1,30 @@
+Step 1 Install Ansible.
+Log in to the Ansible host and run the following command to install Ansible:
+yum install -y ansible
+After the installation is complete, run the following command to check Ansible:
+ansible --version
+
+
+Step 2 Configure Ansible.
+Modify the Ansible configuration file and uncomment the host_key_checking parameter,
+as shown in the following figure:
+
+Modify the Ansible host list, add IP addresses of hosts Zabbix, Nginx1, and Nginx2 to the
+list, and group the hosts as shown in the following figure:
+
+[nginx]
+192.168.1.14
+192.168.1.15
+[Zabbix]
+192.168.1.4
+
+
+Step 3 Configure password-free login for the controlled hosts.
+Run the following commands to configure SSH password-free login from the controller to
+the controlled hosts:
+ssh-keygen
+ssh-copy-id 192.168.1.4
+ssh-copy-id 192.168.1.14
+ssh-copy-id 192.168.1.15
+
+
