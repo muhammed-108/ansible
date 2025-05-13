@@ -1,0 +1,76 @@
+Step 1 Change the host name.
+In this step, variables are used to change the Zabbix host name to Zabbix_server, and
+change the host names of Nginx01 and Nginx02 to Nginx-01 and Nginx-02.
+Modify the Ansible host file as follows:
+[Nginx]
+192.168.1.14 host=01
+192.168.1.15 host=02
+[Nginx:vars]
+group=Nginx
+[Zabbix]
+192.168.1.4 host=Server
+Create an Ansible playbook and enter the following commands:
+---
+- hosts: Zabbix
+ remote_user: root
+ gather_facts: no
+ tasks:
+ - name: set hostname for 192.168.1.4
+ hostname:
+ name={{ host }}
+- hosts: Nginx
+ remote_user: root
+ gather_facts: no
+ tasks:
+ - name: set hostname for 192.168.1.14 and 192.168.1.15
+ hostname:
+ name={{ group }}-{{ host }}
+After the editing is complete, use ansible-playbook –C to run the script and check
+whether there is an error. If an error is reported, rectify the fault. After no error is
+reported, perform the following steps.
+
+
+
+
+
+Step 2 Install and configure zabbix-agent2.
+Add the following content to the Ansible playbook and set related tags:
+……
+ tasks:
+ - name: set hostname for 192.168.1.14 and 192.168.1.15
+ hostname:
+ name={{ group }}-{{ host }}
+ - name: download Zabbix yum repolist
+ tags: agent1
+ shell: rpm -Uvh https://repo.zabbix.com/zabbix/6.2/rhel/8/x86_64/zabbix-release-6.2-
+3.el8.noarch.rpm
+ - name: install zabbix-agent
+ tags: agent2
+ yum:
+ name=zabbix-agent2
+ state=present
+ - name: config zabbix-agent
+ tags: agent3
+ replace:
+ path: /etc/zabbix/zabbix_agent2.conf
+ regexp: '^Server=127.0.0.1$'
+ replace: 'Server=192.168.1.4'
+ notify: restart zabbix-agent2
+ - name: config zabbix-agent service
+ tags: agent3
+ service:
+ name: zabbix-agent2
+ state: started
+ enabled: yes
+ handlers:
+ - name: restart zabbix-agent2
+ service:
+ name: zabbix-agent2
+ state: restarted
+Use the tag to perform the test step by step until all the items pass the test. Then,
+proceed to the next step.
+
+
+Step 3 Run the playbook.
+Run the compiled playbook to install zabbix-agent. The details are as follows:
+ansible-playbook zabbix.yml 
